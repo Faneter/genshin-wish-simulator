@@ -1,6 +1,6 @@
 use console_utils::input::{input, select};
 use simulator::CharacterUpSimulator;
-use strategy::{Strategy, Strategy1};
+use strategy::{Strategy, Strategy1, Strategy2};
 
 mod simulator;
 mod strategy;
@@ -23,6 +23,11 @@ mod strategy;
 
 fn main() {
     'outer: loop {
+        let dian: String = input("请输入所垫抽数:");
+        let dian: i32 = match dian.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
         let money: String = input("请输入预算抽数:");
         let money: i32 = match money.trim().parse() {
             Ok(num) => num,
@@ -42,7 +47,7 @@ fn main() {
             Err(_) => continue,
         };
         loop {
-            let mut strategy = Strategy1::new(money);
+            let mut strategy = Strategy2::new(money, dian);
             strategy.run(&mut CharacterUpSimulator::new(light, is_wai));
             let options = ["重来", "修改数据", "退出"];
             let selected_index = select("请选择：", &options);

@@ -14,8 +14,8 @@ pub struct StarSimulator {
 }
 
 impl StarSimulator {
-    pub fn new() -> StarSimulator {
-        StarSimulator { counts: 0, counts_from_last_5: 0, counts_from_last_4: 0}
+    pub fn new(dian: i32) -> StarSimulator {
+        StarSimulator { counts: dian, counts_from_last_5: 0, counts_from_last_4: 0}
     }
 
     pub fn wish<T: UpSimulator>(&mut self,up: &mut T) -> i32 {

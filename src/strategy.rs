@@ -11,10 +11,10 @@ pub struct Strategy1 {
 }
 
 impl Strategy1 {
-    pub fn new(m: i32) -> Strategy1 {
+    pub fn new(m: i32, dian: i32) -> Strategy1 {
         Strategy1 { 
             counts_from_last_3: 0,
-            star: StarSimulator::new(),
+            star: StarSimulator::new(dian),
             money: m,
         }
     }
@@ -48,6 +48,29 @@ impl Strategy for Strategy1 {
                 let i = self.star.wish(up);
                 self.set_result(i);
             }
+        }
+    }
+}
+
+pub struct Strategy2 {
+    star: StarSimulator,
+    money: i32,
+}
+
+impl Strategy2 {
+    pub fn new(m: i32, dian: i32) -> Strategy2 {
+        Strategy2 { 
+            star: StarSimulator::new(dian),
+            money: m,
+        }
+    }
+}
+
+impl Strategy for Strategy2 {
+    fn run<T: UpSimulator>(&mut self,up: &mut T) {
+        while self.money > 0 {
+            self.star.wish(up);
+            self.money -= 1;
         }
     }
 }
