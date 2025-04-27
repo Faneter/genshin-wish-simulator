@@ -1,13 +1,12 @@
-use crate::simulator::{CharacterUpSimulator, StarSimulator};
+use crate::simulator::{StarSimulator, UpSimulator};
 
 pub trait Strategy {
-    fn run(&mut self);
+    fn run<T: UpSimulator>(&mut self,up: &mut T);
 }
 
 pub struct Strategy1 {
     counts_from_last_3: i32,
     star: StarSimulator,
-    character: CharacterUpSimulator,
     money: i32,
 }
 
@@ -16,7 +15,6 @@ impl Strategy1 {
         Strategy1 { 
             counts_from_last_3: 0,
             star: StarSimulator::new(),
-            character: CharacterUpSimulator::new(),
             money: m,
         }
     }
@@ -38,21 +36,16 @@ impl Strategy1 {
 }
 
 impl Strategy for Strategy1 {
-    fn run(&mut self) {
+    fn run<T: UpSimulator>(&mut self,up: &mut T) {
         while self.money > 0 {
             if self.next_step(self.money) {
                 self.money -= 10;
-                
-                for i in self.star.wish_10().iter() {
-                    // if *i == 5 {
-                    //     if self.character.simulate() {
-                    //         print!("UP");
-                    //     }
-                    // }
+                for i in self.star.wish_10(up).iter() {
                     self.set_result(*i);
                 }
             } else {
-                let i = self.star.wish();
+                self.money -= 1;
+                let i = self.star.wish(up);
                 self.set_result(i);
             }
         }

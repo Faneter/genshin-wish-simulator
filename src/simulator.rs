@@ -8,21 +8,25 @@ use rand::Rng;
  * TODO 配合数据分析器分析总体情况
  */
 pub struct StarSimulator {
-    pub counts: i32,
-    pub counts_from_last_5: i32,
-    pub counts_from_last_4: i32,
+    counts: i32,
+    counts_from_last_5: i32,
+    counts_from_last_4: i32,
 }
 
 impl StarSimulator {
     pub fn new() -> StarSimulator {
-        StarSimulator { counts: 0, counts_from_last_5: 0, counts_from_last_4: 0 }
+        StarSimulator { counts: 0, counts_from_last_5: 0, counts_from_last_4: 0}
     }
 
-    pub fn wish(&mut self) -> i32 {
+    pub fn wish<T: UpSimulator>(&mut self,up: &mut T) -> i32 {
         self.counts += 1;
         let seed = rand::rng().random_range(1..=1000);
         if self.counts_from_last_5 <= 73 && seed <= 6 || seed <= (6 + 60*(self.counts_from_last_5 - 73)) {
-            println!("{}抽出金", self.counts_from_last_5 + 1);
+            if up.simulate() {
+                println!("{}抽出金，为UP金", self.counts_from_last_5 + 1);
+            } else {
+                println!("{}抽出金，并歪了", self.counts_from_last_5 + 1);
+            }
             self.counts_from_last_5 = 0;
             return 5;
         }
@@ -37,33 +41,44 @@ impl StarSimulator {
         return 3;
     }
 
-    pub fn wish_10(&mut self) -> [i32; 10] {
-        return [self.wish(), self.wish(), self.wish(), self.wish(), self.wish(),
-        self.wish(),self.wish(),self.wish(),self.wish(),self.wish()];
+    pub fn wish_10<T: UpSimulator>(&mut self,up: &mut T) -> [i32; 10] {
+        let mut arr: [i32; 10] = [0; 10];
+        for i in 0..arr.len() {
+            arr[i] = self.wish(up);
+        }
+        return arr;
     }
 
 
+}
+pub trait UpSimulator {
+    fn simulate(&mut self) -> bool {
+        return true;
+    }
 }
 
 pub struct CharacterUpSimulator {
-    pub light_count: i32,
-    last_up: bool, // 小保底歪了没
+    pub light_count: i32, // 捕获明光计数器
+    last_up: bool, // 上次是小保底的同时歪了没
 }
 
 impl CharacterUpSimulator {
-    pub fn new() -> CharacterUpSimulator {
+    pub fn new(light: i32, wai: bool) -> CharacterUpSimulator {
         CharacterUpSimulator {
-            light_count: 1,
-            last_up: false,
+            light_count: light,
+            last_up: wai,
         }
     }
-
-    pub fn simulate(&mut self) -> bool {
+}
+impl UpSimulator for CharacterUpSimulator {
+    fn simulate(&mut self) -> bool {
         if self.last_up == true {
+            self.last_up = false;
             return true;
         }
         if self.light_count == 3 {
             self.light_count = 1;
+            println!("触发捕获明光");
             return true;
         }
         let seed = rand::rng().random_range(1..=100);
@@ -75,7 +90,9 @@ impl CharacterUpSimulator {
         if self.light_count == 1 && seed <= 50 {
             self.light_count = 0;
             return true;
-        } else if self.light_count == 0 && seed <= 50 {
+        }
+        let seed = rand::rng().random_range(1..=100);
+        if self.light_count == 0 && seed <= 50 {
             return true;
         }
         self.light_count += 1;
