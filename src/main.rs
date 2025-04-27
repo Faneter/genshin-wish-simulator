@@ -24,7 +24,6 @@ mod strategy;
 fn main() {
     'outer: loop {
         let money: String = input("请输入预算抽数:");
-        println!("{}", money);
         let money: i32 = match money.trim().parse() {
             Ok(num) => num,
             Err(_) => continue,
@@ -37,15 +36,21 @@ fn main() {
             "上个小保底没歪" => false,
             _ => false,
         };
+        let light: String = input("请输入捕获明光计数器示数:");
+        let light: i32 = match light.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
         loop {
             let mut strategy = Strategy1::new(money);
-            strategy.run(&mut CharacterUpSimulator::new(2, is_wai));
+            strategy.run(&mut CharacterUpSimulator::new(light, is_wai));
             let options = ["重来", "修改数据", "退出"];
             let selected_index = select("请选择：", &options);
             let option = String::from(options[selected_index]);
             match &option as &str {
                 "重来" => continue, 
                 "修改数据" => continue 'outer,
+                "退出" => break 'outer,
                 _ => break 'outer,
             }
         }
