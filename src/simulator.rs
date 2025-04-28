@@ -2,37 +2,46 @@ use rand::Rng;
 
 /**
  * 用于生成物品星级
- * 
+ *
  * TODO 配合UP模拟器判断UP情况
- * 
+ *
  * TODO 配合数据分析器分析总体情况
  */
 pub struct StarSimulator {
-    counts: i32,
+    dian: i32,
     counts_from_last_5: i32,
     counts_from_last_4: i32,
 }
 
 impl StarSimulator {
     pub fn new(dian: i32) -> StarSimulator {
-        StarSimulator { counts: dian, counts_from_last_5: 0, counts_from_last_4: 0}
+        StarSimulator {
+            dian: dian,
+            counts_from_last_5: dian,
+            counts_from_last_4: 0,
+        }
     }
 
-    pub fn wish<T: UpSimulator>(&mut self,up: &mut T) -> i32 {
-        self.counts += 1;
+    pub fn wish<T: UpSimulator>(&mut self, up: &mut T) -> i32 {
         let seed = rand::rng().random_range(1..=1000);
-        if self.counts_from_last_5 <= 73 && seed <= 6 || seed <= (6 + 60*(self.counts_from_last_5 - 73)) {
+        if self.counts_from_last_5 <= 73 && seed <= 6
+            || seed <= (6 + 60 * (self.counts_from_last_5 - 73))
+        {
             if up.simulate() {
-                println!("{}抽出金，为UP金", self.counts_from_last_5 + 1);
+                println!("{}抽出金，为UP金", self.counts_from_last_5 + 1 - self.dian);
             } else {
-                println!("{}抽出金，并歪了", self.counts_from_last_5 + 1);
+                println!("{}抽出金，并歪了", self.counts_from_last_5 + 1 - self.dian);
             }
             self.counts_from_last_5 = 0;
+            self.dian = 0;
             return 5;
         }
         self.counts_from_last_5 += 1;
         let seed = rand::rng().random_range(1..=1000);
-        if (self.counts_from_last_4 <= 7 && seed <= 51) || (self.counts_from_last_4 == 8 && seed <= 51) || self.counts_from_last_4 == 9 {
+        if (self.counts_from_last_4 <= 7 && seed <= 51)
+            || (self.counts_from_last_4 == 8 && seed <= 51)
+            || self.counts_from_last_4 == 9
+        {
             // println!("{}抽出四星", self.counts_from_last_5 + 1);
             self.counts_from_last_4 = 0;
             return 4;
@@ -41,15 +50,13 @@ impl StarSimulator {
         return 3;
     }
 
-    pub fn wish_10<T: UpSimulator>(&mut self,up: &mut T) -> [i32; 10] {
+    pub fn wish_10<T: UpSimulator>(&mut self, up: &mut T) -> [i32; 10] {
         let mut arr: [i32; 10] = [0; 10];
         for i in 0..arr.len() {
             arr[i] = self.wish(up);
         }
         return arr;
     }
-
-
 }
 pub trait UpSimulator {
     fn simulate(&mut self) -> bool {
@@ -59,7 +66,7 @@ pub trait UpSimulator {
 
 pub struct CharacterUpSimulator {
     pub light_count: i32, // 捕获明光计数器
-    last_up: bool, // 上次是小保底的同时歪了没
+    last_up: bool,        // 上次是小保底的同时歪了没
 }
 
 impl CharacterUpSimulator {
@@ -78,11 +85,11 @@ impl UpSimulator for CharacterUpSimulator {
         }
         if self.light_count == 3 {
             self.light_count = 1;
-            println!("触发捕获明光");
+            println!("上面触发捕获明光");
             return true;
         }
         let seed = rand::rng().random_range(1..=100);
-        if self.light_count == 2 && seed <=75 {
+        if self.light_count == 2 && seed <= 50 {
             self.light_count = 1;
             return true;
         }
