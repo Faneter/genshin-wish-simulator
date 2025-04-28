@@ -5,6 +5,7 @@ use strategy::{
     strategies::{Strategy1, Strategy2, Strategy3},
 };
 
+mod analysis;
 mod simulator;
 mod strategy;
 
@@ -19,13 +20,13 @@ mod strategy;
  * 大统计工具基本思路
  * 输入抽取规模
  * 选取抽卡策略
- * 默认 无策略1：持续10连 / 无策略2：持续单抽
  *
  * 得到各个策略最终结果(5星[歪数/不歪数/捕获明光数]、四星数、三星数)
  */
 
 fn main() {
     'outer: loop {
+        analysis::clear();
         let strategy_options = ["抽卡策略1", "全单抽", "尽可能10连"];
         let strategy_selected_index = select("请选择抽卡策略：", &strategy_options);
         let strategy_option = String::from(strategy_options[strategy_selected_index]);
@@ -52,7 +53,7 @@ fn main() {
             Ok(num) => num,
             Err(_) => continue,
         };
-        loop {
+        'inner: loop {
             match &strategy_option as &str {
                 "抽卡策略1" => {
                     let mut strategy = Strategy1::new(money, dian);
@@ -68,14 +69,20 @@ fn main() {
                 }
                 _ => (),
             }
-            let options = ["重来", "修改数据", "退出"];
-            let selected_index = select("请选择：", &options);
-            let option = String::from(options[selected_index]);
-            match &option as &str {
-                "重来" => continue,
-                "修改数据" => continue 'outer,
-                "退出" => break 'outer,
-                _ => break 'outer,
+            let options = ["重来", "修改数据", "统计结果", "退出"];
+            loop {
+                let selected_index = select("请选择：", &options);
+                let option = String::from(options[selected_index]);
+                match &option as &str {
+                    "重来" => continue 'inner,
+                    "修改数据" => continue 'outer,
+                    "统计结果" => {
+                        analysis::print_results();
+                        continue;
+                    }
+                    "退出" => break 'outer,
+                    _ => break 'outer,
+                }
             }
         }
     }

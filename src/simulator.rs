@@ -1,14 +1,15 @@
 use rand::Rng;
 
+use crate::analysis;
+
 /**
  * 用于生成物品星级
  *
- * TODO 配合UP模拟器判断UP情况
+ * 配合UP模拟器判断UP情况
  *
  * TODO 配合数据分析器分析总体情况
  */
 pub struct StarSimulator {
-    dian: i32,
     counts_from_last_5: i32,
     counts_from_last_4: i32,
 }
@@ -16,7 +17,6 @@ pub struct StarSimulator {
 impl StarSimulator {
     pub fn new(dian: i32) -> StarSimulator {
         StarSimulator {
-            dian: dian,
             counts_from_last_5: dian,
             counts_from_last_4: 0,
         }
@@ -28,21 +28,22 @@ impl StarSimulator {
             || seed <= (6 + 60 * (self.counts_from_last_5 - 73))
         {
             if up.simulate() {
-                println!("{}抽出金，为UP金", self.counts_from_last_5 + 1 - self.dian);
+                println!("第{}抽出金，为UP金", self.counts_from_last_5 + 1);
+                analysis::add(self.counts_from_last_5, true);
             } else {
-                println!("{}抽出金，并歪了", self.counts_from_last_5 + 1 - self.dian);
+                println!("第{}抽出金，并歪了", self.counts_from_last_5 + 1);
+                analysis::add(self.counts_from_last_5, false);
             }
             self.counts_from_last_5 = 0;
-            self.dian = 0;
             return 5;
         }
         self.counts_from_last_5 += 1;
         let seed = rand::rng().random_range(1..=1000);
         if (self.counts_from_last_4 <= 7 && seed <= 51)
-            || (self.counts_from_last_4 == 8 && seed <= 51)
+            || (self.counts_from_last_4 == 8 && seed <= 563)
             || self.counts_from_last_4 == 9
         {
-            // println!("{}抽出四星", self.counts_from_last_5 + 1);
+            // println!("第{}抽出四星", self.counts_from_last_5 + 1);
             self.counts_from_last_4 = 0;
             return 4;
         }
